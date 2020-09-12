@@ -1,5 +1,5 @@
 {
-  "name": "elasticsearch-globalsearch",
+  "name": "elasticsearch-react",
   "version": "1.0.0",
   "main": "index.js",
   "private": true,
@@ -8,7 +8,8 @@
   "scripts": {
     "start": "lerna run start --stream",
     "docker:up": "lerna run docker:up --stream",
-    "seed": "lerna run seed"
+    "seed": "lerna run seed",
+    "bootstrap": "lerna bootstrap"
   },
   "dependencies": {
     "lerna": "^3.22.1"
