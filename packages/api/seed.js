@@ -21,20 +21,23 @@ const indices = ["participant", "customer", "report"];
 (async () => {
   await Promise.all(
     indices.map(async index =>
-      !(await es.indices.exists({ index }))
+      !await es.indices.exists({ index })
         ? es.indices.create({ index })
         : Promise.resolve()
     )
   );
 
-  await es.bulk({
-    body: [...participants, ...customers, ...reports].reduce(
-      (acc, document) => [
-        ...acc,
-        { index: { _index: n.type, _type: n.type, _id: n.id } },
-        document
-      ],
-      []
-    )
-  });
+  await Promise.all(
+    [participants, customers, reports].map(set => es.bulk({
+      refresh: true,
+      body: set.reduce(
+        (acc, document) => [
+          ...acc,
+          { index: { _index: document.type, _type: document.type, _id: document.id } },
+          document
+        ],
+        []
+      )
+    }))
+  )
 })();
