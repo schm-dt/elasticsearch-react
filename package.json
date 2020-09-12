@@ -1,0 +1,19 @@
+{
+  "name": "elasticsearch-globalsearch",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "author": "Michael <me@michaelschmidt.com.au>",
+  "license": "MIT",
+  "scripts": {
+    "start": "lerna run start --stream",
+    "docker:up": "lerna run docker:up --stream",
+    "seed": "lerna run seed"
+  },
+  "dependencies": {
+    "lerna": "^3.22.1"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}
