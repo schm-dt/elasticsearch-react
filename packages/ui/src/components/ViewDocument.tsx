@@ -1,11 +1,12 @@
 import React from 'react'
 import useFetch from 'use-http'
 import { Result } from 'antd'
-import { SearchResult } from './types'
+import { SearchResult } from '../types'
+import { CustomerView, ParticipantView, ReportView } from './'
 
 export type ViewDocumentProps = { searchResult: SearchResult | null }
 
-const ViewDocument: React.FC<ViewDocumentProps> = ({ searchResult }) => {
+export const ViewDocument: React.FC<ViewDocumentProps> = ({ searchResult }) => {
   const index = searchResult?._index
   const id = searchResult?._id
 
@@ -15,8 +16,7 @@ const ViewDocument: React.FC<ViewDocumentProps> = ({ searchResult }) => {
 
   const { response, loading } = useFetch(`http://localhost:9000/${index}/${id}`, [id])
 
-  console.log(response)
-  const document = response?.data?._source
+  const document = response?.data?._source as SearchResult['_source']
 
   if (!loading && !document) {
     return (
@@ -28,22 +28,17 @@ const ViewDocument: React.FC<ViewDocumentProps> = ({ searchResult }) => {
     return null
   }
 
-  if ('title' in document) {
-    return (
-      <div>
-        <h1>{document.title}</h1>
-        <p>{document.content}</p>
-      </div>
-    )
+  if (document.type === 'report') {
+    return <ReportView {...document} />
   }
 
-  return (
-    <div>
-      <h1>{document.fullName}</h1>
-      <span>{document.type}</span>
-      <p>{document.streetAddress}</p>
-    </div>
-  )
-}
+  if (document.type === 'customer') {
+    return <CustomerView {...document} />
+  }
 
-export default ViewDocument
+  if (document.type === 'participant') {
+    return <ParticipantView {...document} />
+  }
+
+  return null
+}

@@ -1,15 +1,16 @@
 export type Participant = {
   id: string
-  type: string
+  type: 'participant'
   firstName: string
   lastName: string
   fullName: string
   streetAddress: string
+  avatar: string
 }
 
 export type Customer = {
   id: string
-  type: string
+  type: 'customer'
   firstName: string
   lastName: string
   fullName: string
@@ -17,7 +18,7 @@ export type Customer = {
 
 export type Report = {
   id: string
-  type: string
+  type: 'report'
   title: string
   content: string
 }
