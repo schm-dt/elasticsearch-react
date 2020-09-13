@@ -5,6 +5,7 @@ import useFetch from 'use-http'
 import 'antd/dist/antd.css'
 import { SearchResult } from './types'
 import ViewDocument from './ViewDocument'
+import { useDebounce } from 'react-use'
 
 const ENDPOINT = 'http://localhost:9000'
 
@@ -61,16 +62,7 @@ const searchResultAsOption = (result: SearchResult) => ({
 export default () => {
   const [selected, setSelected] = React.useState<SearchResult | null>(null)
   const [value, setValue] = React.useState<string>('')
-  const { response, loading, error } = useFetch(`${ENDPOINT}/search/?q=${value}`, [value])
-
-  console.log(response, loading, error)
-
-  const onChange = React.useCallback(
-    e => {
-      setValue(e.target.value)
-    },
-    [setValue],
-  )
+  const [debouncedValue, setDebouncedValue] = React.useState<string>('')
 
   const onSelect = React.useCallback(
     (value, option) => {
@@ -80,10 +72,19 @@ export default () => {
     [setValue],
   )
 
+  useDebounce(
+    () => {
+      setDebouncedValue(value)
+    },
+    500,
+    [value],
+  )
+
   const onSubmit = React.useCallback(e => {
-    console.log(value)
     e.preventDefault()
   }, [])
+
+  const { response } = useFetch(`${ENDPOINT}/search/?q=${debouncedValue}`, [debouncedValue])
 
   const options = response?.data?.hits?.hits.map(searchResultAsOption)
 
@@ -96,13 +97,9 @@ export default () => {
           options={options}
           onChange={setValue}
           onSelect={onSelect}
+          value={value}
         >
-          <Input.Search
-            size="large"
-            placeholder="Search for anything"
-            value={value}
-            onChange={onChange}
-          />
+          <Input.Search size="large" placeholder="Search for anything" />
         </AutoComplete>
       </form>
       <ViewDocument searchResult={selected} />
