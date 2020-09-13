@@ -1,99 +1,111 @@
-import * as React from "react";
-import { Input, AutoComplete } from "antd";
+import * as React from 'react'
+import { Input, AutoComplete } from 'antd'
 // import { UserOutlined } from "@ant-design/icons";
-import useFetch from "use-http";
-import "antd/dist/antd.css";
+import useFetch from 'use-http'
+import 'antd/dist/antd.css'
+import { SearchResult } from './types'
+import ViewDocument from './ViewDocument'
 
-import "./App.css";
+const ENDPOINT = 'http://localhost:9000'
 
-type Participant = {
-  id: string;
-  type: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  streetAddress: string;
-};
-
-type Customer = {
-  id: string;
-  type: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-};
-
-type Report = {
-  id: string;
-  type: string;
-  title: string;
-  content: string;
-};
-
-type SearchResult = { _source: Participant | Customer | Report };
-
-const getLabel = (item: SearchResult["_source"]) => {
-  if ("streetAddress" in item) {
-    return item.streetAddress;
+const getValue = (item: SearchResult['_source']) => {
+  // Report
+  if ('title' in item) {
+    return item.title
   }
 
-  if ("title" in item) {
-    return item.title;
+  // Participant/Customer
+  return item.fullName
+}
+
+const renderResult = (item: SearchResult['_source']) => {
+  if ('streetAddress' in item) {
+    return (
+      <div>
+        <div>
+          {item.fullName} ({item.id})
+        </div>
+        <span>{item.streetAddress}</span>
+      </div>
+    )
   }
 
-  return item.fullName;
-};
+  // Report
+  if ('title' in item) {
+    return (
+      <div>
+        <div>{getValue(item)}</div>
+        <span>{item.content}</span>
+        <span>Report</span>
+      </div>
+    )
+  }
 
-const renderItem = (result: SearchResult) => {
-  return {
-    key: result._source.id,
-    value: getLabel(result._source),
-    label: <span>{getLabel(result._source)}</span>
-  };
-};
+  return (
+    <div>
+      <div>
+        {item.fullName} ({item.id})
+      </div>
+      <div>{getValue(item)}</div>
+    </div>
+  )
+}
+
+const searchResultAsOption = (result: SearchResult) => ({
+  key: result._source.id,
+  result,
+  value: getValue(result._source),
+  label: renderResult(result._source),
+})
 
 export default () => {
-  const [query, setQuery] = React.useState<string>("");
-  const {
-    response
-    // loading,
-    // error
-  } = useFetch(`http://localhost:9000/search/?q=${query}`, [query]);
+  const [selected, setSelected] = React.useState<SearchResult | null>(null)
+  const [value, setValue] = React.useState<string>('')
+  const { response, loading, error } = useFetch(`${ENDPOINT}/search/?q=${value}`, [value])
+
+  console.log(response, loading, error)
 
   const onChange = React.useCallback(
     e => {
-      setQuery(e.target.value);
+      setValue(e.target.value)
     },
-    [setQuery]
-  );
+    [setValue],
+  )
 
   const onSelect = React.useCallback(
-    v => {
-      setQuery(v);
+    (value, option) => {
+      setSelected(option.result)
+      setValue(value)
     },
-    [setQuery]
-  );
+    [setValue],
+  )
 
-  // @ts-ignore
-  const options = response?.data?.hits?.hits.map(renderItem) ?? [];
+  const onSubmit = React.useCallback(e => {
+    console.log(value)
+    e.preventDefault()
+  }, [])
+
+  const options = response?.data?.hits?.hits.map(searchResultAsOption)
 
   return (
-    <div className="App" style={{ padding: 50 }}>
-      <div>
+    <div style={{ padding: 50 }}>
+      <form onSubmit={onSubmit}>
         <AutoComplete
           dropdownMatchSelectWidth={500}
           style={{ width: 500 }}
           options={options}
+          onChange={setValue}
           onSelect={onSelect}
         >
           <Input.Search
             size="large"
-            placeholder="input here"
-            value={query}
+            placeholder="Search for anything"
+            value={value}
             onChange={onChange}
           />
         </AutoComplete>
-      </div>
+      </form>
+      <ViewDocument searchResult={selected} />
     </div>
-  );
-};
+  )
+}
