@@ -8,6 +8,7 @@
   "scripts": {
     "start": "lerna run start --stream",
     "docker:up": "lerna run docker:up --stream",
+    "docker:down": "lerna run docker:down",
     "seed": "lerna run seed",
     "bootstrap": "lerna bootstrap"
   },

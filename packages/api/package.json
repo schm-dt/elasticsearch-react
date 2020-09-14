@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon index.js",
     "seed": "node seed.js",
-    "docker:up": "docker-compose up"
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down"
   },
   "keywords": [],
   "author": "",
